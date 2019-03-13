@@ -1,6 +1,7 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import logging
 import settings
+import ephem
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
                     level=logging.INFO,
@@ -11,6 +12,17 @@ def greet_user(bot, update):
     text = 'Вызван /start'
     logging.info(text)
     update.message.reply_text(text)
+
+def find_constell(bot, update):
+    planet = str(update.message.text.split()[1].capitalize())
+    try:
+        constell = ephem.constellation(planet)
+        rep_text = "Планета {} находится в созвездии {}.".format(planet, constell)
+        update.message.reply_text(rep_text)
+    except:
+        err_text = "Планета {} не найдена!".format(planet)
+        update.message.reply_text(err_text)
+    
 
 def talk_to_me(bot, update):
     user_text = "Привет {}! Ты написал: {}".format(update.message.chat.first_name, update.message.text)
@@ -25,6 +37,7 @@ def main():
 
     dp = mybot.dispatcher
     dp.add_handler(CommandHandler("start", greet_user))
+    dp.add_handler(CommandHandler("planet", find_constell))
     dp.add_handler(MessageHandler(Filters.text, talk_to_me))
     
     mybot.start_polling()
